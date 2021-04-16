@@ -4,8 +4,9 @@ function scheduleHtmlParser(html) {
   //可使用正则匹配
   //可使用解析dom匹配，工具内置了$，跟jquery使用方法一样，直接用就可以了
   //作者：Jaker
-  //更新时间：2021-3-12 16:58:46
+  //更新时间：2021-4-11 21:24:05
   //联系方式(QQ)：2205909051
+//   可能会添加的功能 学生课表和班级课表都能导入，但是课表天天变动有可能不加
 
 let result= []
 let courseInfos = []
@@ -45,16 +46,36 @@ let sections = [];
 let csinfo = '';
 
 for (i=0;i<Allinfo.length;i++){
-
   csinfo = Allinfo[i].attribs.title
-  name = csinfo.match(/\S+[(]{1}/)
+  name = csinfo.match(/^.+?[(]{2}/)
+//   name = csinfo.search(/[(]/)
+//   name = csinfo.substring(0,name)
+
+//   name = name.match(/^\S+[(]{2}/)
+
   name = name[0].replace(/\(/g,"")
 
-  teacher = csinfo.match(/[(]{1}\S+[)]{1}[;]{1}/)
+  teacher = csinfo.match(/[(]{1}\S+?[)]{1}[;]{1}/)
   teacher = teacher[0].replace(/[\(\);]/g,"")
+//   console.info(Allinfo[i])
+  position = csinfo.match(/,{1}\S+?[(]{1}/)
+//   为了匹配有线上课程 没有教室的情况 
+  if(position==null){
+    position = "线上课程"
+//     课程在不同位置的时候对象不一样 
+    try{
+      week = (Allinfo[i].children[1].children[0].children[0].children[0].data)
+      week = week.replace(/[\(\),;]/g,"")
+    }catch{
+      week = Allinfo[i].children[1].children[0].data
+      week = week.replace(/[\(\),;]/g,"")
+  }
 
-  position = csinfo.match(/,{1}\S+[(]{1}/)
-  position = position[0].replace(/[\(\),]/g,"")
+  }else{
+    position = position[0].replace(/[\(\),]/g,"")
+    week = csinfo.match(/[;][(]\S+\s?\S+[,]/)
+    week = week[0].replace(/[\(\),;]/g,"")
+  }
 
   day = Allinfo[i].attribs.id
   day = day.length > 5 ? parseInt(day[2])+1 : 1
@@ -68,14 +89,9 @@ for (i=0;i<Allinfo.length;i++){
   }else if(rowspan==2){
     sections = [{"section":section},{"section":section+1}]
   }
-
-
-
-  week = csinfo.match(/[;][(]\S+\s?\S+[,]/)
-  week = week[0].replace(/[\(\),;]/g,"")
   result = {name:name,position:position,teacher:teacher,weeks:getweeks(week),day:day,sections:sections}
   courseInfos.push(result)
-  console.info(result)  
+//   console.info(result)  
   result = []
 
 }
@@ -83,8 +99,8 @@ for (i=0;i<Allinfo.length;i++){
 result = JSON.stringify(courseInfos)
 
 result = '{"courseInfos":'+result+sectionTimes
-
-console.info(result)
+//最后要返回前的结果
+// console.info(result)
 result = JSON.parse(result)
 return result
 
@@ -101,15 +117,18 @@ function getweeks(week) {
   week = week.split(" ")
   for(k=0;k<week.length;k++){
     let ww = week[k]
+//       无论是单周还是双周都是从（1-9  2-10）第一个开始的只要步长为2就可以隔周
       if(ww[0]=="单" || ww[0]=="双"){
-        if(ww[0]=="单"){
+//         if(ww[0]=="单"){
           ww = ww.substring(1)
+//           console.info(ww)
           ww = ww.split("-")
           ww[0] = parseInt(ww[0])
-          for(ww[0];ww[0]<=ww[1];ww[0]++){
+          for(ww[0];ww[0]<=ww[1];ww[0]+=2){
             weeks.push(ww[0])
           }
-        }
+//         }
+
       }
       else if(/,/.test(ww)){
         ww = ww.split(",")
@@ -118,6 +137,7 @@ function getweeks(week) {
           weeks.push(ww[i])   
         }
       }
+//       只有一个周的情况
       else if(ww.length<3){
         weeks.push(parseInt(ww))
       }else{

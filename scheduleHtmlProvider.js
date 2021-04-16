@@ -1,7 +1,7 @@
 function scheduleHtmlProvider(iframeContent = "", frameContent = "", dom = document) {
     //除函数名外都可编辑  函数名函数名不是变量名 我丢
     //作者：Jaker
-    //更新时间：2021-3-12 16:58:40
+    //更新时间：2021-4-11 21:24:12
     //联系方式(QQ)：2205909051
     //获取子iframe并在内容里找到类名为gridtable的第一个元素 
 	// 适配数维不容易啊~~~！！
@@ -9,7 +9,7 @@ function scheduleHtmlProvider(iframeContent = "", frameContent = "", dom = docum
 /*
 本次测试方案 
 	给loginExt.action写入head  成功登陆
-	给courseTableForStd.action或courseTableForStd!courseTable.action写入head 测试中
+	给courseTableForStd.action或courseTableForStd!courseTable.action写入head 成功出来完整课程表
 */
 
 // 登录页面请求头   使系统正常登陆
@@ -87,6 +87,7 @@ let course_head = `<head>
 // 因为教务系统和小爱同学存在冲突，特尝试使用js重新写入请求头
 let course_url = "http://jwxt.squ.net.cn/eams/courseTableForStd.action";
 let home_url = "http://jwxt.squ.net.cn/eams/home.action";
+let intranet_url = "http://10.0.18.91/eams/loginExt.action";
 let now_url = window.location.href;
 now_url = now_url.split('/');
 now_url = now_url[now_url.length-1];
@@ -116,12 +117,14 @@ if (sqxy != "No") {
 		document.write(bodys)
 	}else if(now_url =="homeExt.action" || now_url == "homeExt.action#" ||  now_url == "home.action"){
 	// 	如果是主页就跳转到课表页面
-		let courseOK = confirm("点击“确定”跳到课程表页面\n如不知道怎么使用,可以联系作者Q：2205909051")
+		let courseOK = confirm("点击“确定”跳到课程表页面\n如不知道怎么使用\n课表页面请选择班级课表,可以联系作者Q：2205909051")
 		if(courseOK == true){
 			window.location.href=course_url
 		}else{
 			document.write("<a style='font-size:40px' href="+home_url+">去旧版主页</a>");
+			document.write("<a style='font-size:40px' href="+intranet_url+">去学校内网主页</a>");
 			document.write("<a style='font-size:40px' href="+course_url+">去课程表页面</a>");
+
 			document.write("<div style='font-size:40px'>树维系统适配不易，漂亮，帅气的同学点个赞吧！</div>");
 			document.write("<div style='font-size:40px'>如不知道怎么使用,可以联系作者Q：2205909051</div>");
 			document.write("<div style='font-size:40px'>如不知道怎么使用,可以联系作者Q：2205909051</div>");
